@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <meta charset="utf-8">
+    <title>Fines</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+<h2 align="center"> Fines Due</h2>
+<table id="tableid" align="center" class="table table-hover table-bordered" style="width:80%; margin:10px auto">
+            <tr>
+                    <th>Loan Id</th>
+                    <th>Card Id</th>
+                    <th>Fine Amount</th>
+                    <th>Paid</th></tr>
+
+                     <% if(data.length){ 
+                                
+                 for(var i = 0;i < data.length;i++) { %>
+                 
+                <tr>
+              
+                    <td><%=data[i].Loan_id%></td>
+                    <td ><%=data[i].Card_id%></td>
+                    <td><%=data[i].Fine_amt%></td>
+                    <% if(data[i].Paid==1) { %>
+                    <td>Paid</td>
+                    <% } else { %>
+                    <td>Not Paid</td>
+                <% } %>
+                  </tr>
+                  <% } %>
+                  <% } %>
+                  </table>
+    <div class="text-center" style="margin-top:10px;">
+    <button type="button" class="btn btn-dark " name="button" id='home'><a href="/">Home</a></button>
+  </div>
+
+
+
+

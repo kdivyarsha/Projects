@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bootstrap Simple Login Form</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+<script>
+ $(document).ready(function(){
+$("#tableid").hide();
+$("#checkout").hide();
+$("#table1").hide();
+
+$("#searchb").click(function(e){
+        e.preventDefault();
+        $("#tbody").html("");
+        $("#checkout").hide();
+        var data1=$("#srch").val();
+        $.ajax({
+            url:"/",
+            type:"POST",
+            data:{index: data1},
+            success:function(data){
+                if(data=="blankerror"){
+                    alert("Please enter a non null value to search");
+                }
+                else if(data=="")
+                     alert("No books with the search");
+
+                 var rowid=0;
+                 $.each(data,function(key,value){
+                    var bookid=value.Isbn;
+                    var titles=value.Title;
+                    var authors=value.fullname;
+                    var available=value.Availability;
+                    if(available=="Not available"){ 
+                        var tablerow= '<tr><td>'+bookid+'</td><td>'+titles+'</td><td>'+authors+'</td><td>'+available+'</td><td><input type="checkbox" disabled="disabled"/></td></tr>';
+                    }
+                    else{
+                        var tablerow= '<tr><td>'+bookid+'</td><td>'+titles+'</td><td>'+authors+'</td><td>'+available+'</td><td><input type="checkbox"/></td></tr>';
+                    }
+                
+
+
+                $("#tableid").append(tablerow);
+                $("#table1").show();
+                    $("#tableid").show();
+                    rowid++;
+                });
+                     $("td").click(function(){
+                    $("#checkout").show();})
+
+                    $("#checkoutb").click(function(){
+                    var isbnarray=[];
+                    $("#tableid").find("tr").each(function(){
+                        
+                        if($(this).find('input[type=checkbox]').is(":checked")){
+
+                            var info=$(this).find("td").eq(0).html();
+                            var title1=$(this).find("td").eq(1).html();
+                            var author1=$(this).find("td").eq(2).html();
+
+                            isbnarray.push(info);
+                            
+                        }
+                    });
+
+                    
+                    if(isbnarray.length>3){
+                        alert("Sorry cant check out more than 3");
+                    } else{
+                        $("#divcheckout").show();
+                        $("#checkoutb").html("Checkout");
+                        $("#checkoutb").attr("id","checkoutb2");
+                        
+                        
+                        $("#checkoutb2").click(function(){
+
+                            var isbnarray1=[];
+                            $("#tableid").find("tr").each(function(){
+                        
+                                if($(this).find('input[type=checkbox]').is(":checked")){
+
+                                    var info1=$(this).find("td").eq(0).html();
+                                   
+                                    var title2=$(this).find("td").eq(1).html();
+                                   
+                                    var author2=$(this).find("td").eq(2).html();
+                                 
+                                    isbnarray1.push(info1);
+
+
+                            
+                                }
+                            });
+
+                            var libraryid=$("#libno").val();
+                            console.log(libraryid)
+                            if(libraryid==''){
+                                alert("Please input valid Libraryid");
+                            }
+                            var length1=isbnarray1.length;
+                            // console.log("length",length1);
+                            // console.log("0",isbnarray1[0]);
+                            // console.log("1",isbnarray1[1]);
+                            // console.log("2",isbnarray1[2]);
+
+                            $.ajax({
+                                url:"/checkout",
+                                type:"POST",
+                                data:{index1: isbnarray1[0],index2:isbnarray1[1],index3:isbnarray1[2],index4:libraryid,index5:length1},
+                                success:function(data1){
+                                    console.log("indata1",data1)
+                                    if(data1=="nocardno"){
+                                        alert("No registered Library Id. Please register first");
+                                        
+                                    }
+                                    else {
+                                    if(data1=="Success"){
+                                        alert("Checked Out Successfully");
+                                        window.location.href= "/";
+                                    }
+                                    else{
+                                        alert("Book limit error");
+                                    }
+                                }
+                                }
+
+
+                            });
+
+                        });
+
+                    }
+
+                    
+                });
+
+             }
+         });
+
+
+
+    })
+
+ })
+</script>
+<style type="text/css">
+	.login-form {
+		width: 600px;
+    	margin: 30px auto;
+	}
+    .login-form form {
+    	margin-bottom: 5px;
+        background: #f7f7f7;
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        padding: 5px;
+    }
+    .login-form h2 {
+        margin: 0 0 10px;
+    }
+    .form-control, .btn {
+        min-height: 38px;
+        border-radius: 2px;
+    }
+    .btn {        
+        font-size: 15px;
+        font-weight: bold;
+    }
+     .fl {
+        background: #f7f7f7;
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        padding: 5px;
+      width: 49%;width: 300px;
+        margin: 10px auto;
+    }
+    .fines
+    {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+    }
+
+
+  
+</style>
+</head>
+<body>
+<div class="fines">
+<button class="btn btn-dark" ><a href="/fines">View All Fines</a></button>
+</div>
+
+            <div id="div2" align="left">
+            <button class="btn btn-dark " ><a href="/userreg">New User Registrations</a></button>
+            <button class="btn btn-dark "><a href="/usercheckin">User Check-in</a></button>
+        </div>
+
+<div id=search class="login-form">
+    <!-- <form action="" method="post"> -->
+        <h2 class="text-center">Library Management System</h2> 
+                <div class="form-group">
+            <input type="text" class="form-control"  id="srch" name="srch" placeholder="Enter to search" required="required" >
+        </div>      
+        <div class="form-group">
+            <button type="submit" id=searchb class="btn btn-primary btn-block">Search for books</button>
+        </div>    
+    <!-- </form> -->
+
+</div>
+</body>
+
+<div id=checkout class="fl" align="center">
+    <!-- <form action="" action="" method="post">  -->
+
+          <div id=divcheckout>  <h4>Library ID</h4>
+            <input type="text" class="form-control"  id="libno" name="cardno" placeholder="Enter library Id" required="required" ></div>
+    
+        <div>
+            <button id="checkoutb" class="btn btn-primary btn-block">Checkout</button>
+        </div>    
+<!--     </form> -->
+</div>
+</div>
+
+<div id="table1" align="center">
+    <h3> Books </h3>
+
+            <table id="tableid" align="center" class="table table-hover table-bordered" style="width:80%; margin:10px auto">
+            <tr>
+                    <th>ISBN</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Availability</th>
+                     <th>Select</th> </tr>
+                     <tbody id="tbody">
+                         
+                     </tbody>
+                    
+                  </table>
+                  </div>
+                   
+
+
+</html>
+
+
+

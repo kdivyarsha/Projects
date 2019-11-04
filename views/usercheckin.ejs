@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <meta charset="utf-8">
+    <title>User Check-in</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style media="screen">
+      .selectcheckin{
+        background-color: #ffccbb;
+      }
+    </style>
+  <script>
+$(document).ready(function () {
+  $("#refresh").click(function(){
+    
+  });
+  $('#tableid').hide();
+  $("#find").on('click',function (e) {
+    $('tbody').html('');
+    e.preventDefault();
+    var checkin=$("#checkin").val();
+    $.ajax({
+      url: "/checkin",
+      type: "POST",
+      data: {srch:checkin},
+      success: function (data) {
+        if(data=='noloans'){
+          console.log(data);
+          $('.alert-danger').html('');
+          $('.alert-danger').append('No Book loans');
+          $(".alert-danger").fadeIn();
+          $(".alert-danger").fadeOut(3000);
+        }
+        else if(data!='noloans'){
+        // data=$.parseJSON(data);
+        $.each(data,function(key,value){
+          var name=value.fname+' '+value.lname;
+          var tablerow= '<tr style={cursor: pointer}><td id="loanid">'+value.Loan_id+'</td><td>'+value.Card_id+'</td><td id="isbn">'+value.Isbn+'</td><td>'+name+'</td><td>'+value.Title+'</td></tr>';
+          $("tbody").append(tablerow);
+          $("#tableid").show();
+        });
+      }
+      }
+    });
+  });
+  $("tbody").on('click','tr', function () {
+    var loanid=$(this).children('#loanid').text();
+    var isbn=$(this).children('#isbn').text();
+    $('.selectcheckin').removeClass('selectcheckin');
+    $(this).addClass('selectcheckin');
+    $.ajax({
+      url: '/loanid',
+      type: 'POST',
+      data: {loanid: loanid},
+      success: function (data) {
+        console.log(data);
+        if (data=='nofine') {
+          var payfine="<h3>No fine</h3><button id='confirmcheckin' value='"+loanid+"' data-isbn='"+isbn+"'>checkin</button>"
+        }
+        else {
+          var payfine='<h3>'+data+' $</h3><button class="btn btn-dark" value="'+loanid+'" id="payconfirmcheckin" data-isbn="'+isbn+'">Payfine and Checkin Book</button>'
+          console.log(payfine);
+        }
+        $("#fineDetails").html('');
+        $("#fineDetails").append(payfine);
+         // $("#myModal").modal();
+      }
+    });
+    // console.log(loanid);
+
+  });
+  $('#fineDetails').on('click','#confirmcheckin',function () {
+    var checkinid=$(this).attr('value');
+    var isbn=$(this).attr('data-isbn');
+    console.log("ch",checkinid);
+    $.ajax({
+      url: '/confirmcheckin',
+      type: 'POST',
+      data: {checkinid: checkinid, isbn: isbn},
+      success: function (data) {
+        console.log("confirmm",data);
+        $('#fineDetails').html('');
+        $('.alert-info').html('');
+        $('.alert-info').append(data);
+        $(".alert-info").fadeIn();
+        $(".alert-info").fadeOut(3000);
+        $('.selectcheckin').remove();
+      }
+    });
+  });
+  
+  $('#fineDetails').on('click','#payconfirmcheckin',function () {
+    var paycheckinid=$(this).attr('value');
+    var isbn=$(this).attr('data-isbn');
+    console.log("inpay",paycheckinid);
+    console.log("inpayisbn",isbn);
+    $.ajax({
+      url: '/payconfirmcheckin',
+      type: 'POST',
+      data: {paycheckinid: paycheckinid, isbn: isbn},
+      success: function (data) {
+        $('#fineDetails').html('');
+        $('.alert-info').html('');
+        $('.alert-info').append(data);
+        $(".alert-info").fadeIn();
+        $(".alert-info").fadeOut(3000);
+        $('.selectcheckin').remove();
+      }
+    });
+  });
+});
+
+  </script>
+  </head>
+
+<style type="text/css">
+  .login-form {
+    width: 600px;
+      margin: 30px auto;
+  }
+    .login-form form {
+      margin-bottom: 5px;
+        background: #f7f7f7;
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        padding: 5px;
+    }
+    .login-form h2 {
+        margin: 0 0 10px;
+    }
+    .form-control, .btn {
+        min-height: 38px;
+        border-radius: 2px;
+    }
+    .btn {        
+        font-size: 15px;
+        font-weight: bold;
+    }
+  </style>
+
+
+  <body>
+    <div class="text-center" style="margin-top:10px;">
+      <button type="button" class="btn btn-dark " name="button" id='home'><a href="/">Home</a></button>
+     <!--  <button type="button" id="refresh">Refresh Fines</button> -->
+
+    </div>
+<div class="login-form">
+    <h3 align='center'>User Check-in</h3>
+    <form  align='center'>
+      <input type="text" class="form-control" name="checkin" value="" placeholder="Enter card no or Borrower name or Book id" style="width:590px;" id="checkin">
+&nbsp;
+      <button class="btn btn-primary btn-block" type="submit" name="find" id="find" value="Find">FIND</button>
+    </form>
+  </div>
+    <div style="overflow-y:scroll; height: 550px;">
+      <div class="container text-center" id="fineDetails">
+
+      </div>
+      <div class="alert alert-danger text-center" style="display: none; margin-top:15px;">
+
+      </div>
+      <div class="alert alert-info text-center" style="display: none; margin-top:15px;">
+
+      </div>
+<div style="overflow-y:scroll; height: 550px;">
+    <table id="tableid" align="center" class="table table-hover table-bordered" style="width:80%; margin:10px auto">
+			<thead>
+			<tr>
+				<th>LOAN ID</th><th>CARD ID</th><th>ISBN</th><th>Name</th><th>Title</th>
+			</tr>
+			</thead>
+			<tbody style="cursor: pointer">
+			</tbody>
+		</table>
+  </div>
+    </div>
+  </body>
+</html>
